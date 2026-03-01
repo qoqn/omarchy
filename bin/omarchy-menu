@@ -137,7 +137,11 @@ show_toggle_menu() {
   *Nightlight*) omarchy-toggle-nightlight ;;
   *Idle*) omarchy-toggle-idle ;;
   *Bar*) omarchy-toggle-waybar ;;
-  *) show_trigger_menu ;;
+  *Layout*) omarchy-hyprland-workspace-layout-toggle ;;
+  *Ratio*) omarchy-hyprland-window-single-square-aspect-toggle ;;
+  *Gaps*) omarchy-hyprland-window-gaps-toggle ;;
+  *Scaling*) omarchy-hyprland-monitor-scaling-cycle ;;
+  *) back_to show_trigger_menu ;;
   esac
 }
 
@@ -463,6 +467,7 @@ go_to_menu() {
   *apps*) walker -p "Launch…" ;;
   *learn*) show_learn_menu ;;
   *trigger*) show_trigger_menu ;;
+  *toggle*) show_toggle_menu ;;
   *share*) show_share_menu ;;
   *style*) show_style_menu ;;
   *theme*) show_theme_menu ;;
