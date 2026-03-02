@@ -5,6 +5,18 @@ MONITOR_INFO=$(hyprctl monitors -j | jq -r '.[] | select(.focused == true)')
 ACTIVE_MONITOR=$(echo "$MONITOR_INFO" | jq -r '.name')
 CURRENT_SCALE=$(echo "$MONITOR_INFO" | jq -r '.scale')
 
+# Check if monitor is configured in $XDG_CONFIG_HOME/hypr/monitors.conf
+XDG_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
+MONITOR_CONF=$(grep -E "^monitor\s*=\s*$ACTIVE_MONITOR," "$XDG_CONFIG_DIR/hypr/monitors.conf" 2>/dev/null | head -1)
+if [ -n "$MONITOR_CONF" ]; then
+    # Parse existing config: monitor = <name>,<resolution>,<position>,<scale>
+    CONFIGURED_RESOLUTION=$(echo "$MONITOR_CONF" | sed -E 's/.*monitor\s*=\s*[^,]*,([^,]*),.*/\1/')
+    CONFIGURED_POSITION=$(echo "$MONITOR_CONF" | sed -E 's/.*monitor\s*=\s*[^,]*,[^,]*,([^,]*),.*/\1/')
+    MONITOR_SPEC="$CONFIGURED_RESOLUTION,$CONFIGURED_POSITION"
+else
+    MONITOR_SPEC="preferred,auto"
+fi
+
 # Cycle through scales: 1 → 1.6 → 2 → 3 → 1
 CURRENT_INT=$(awk -v s="$CURRENT_SCALE" 'BEGIN { printf "%.0f", s * 10 }')
 
@@ -16,6 +28,6 @@ case "$CURRENT_INT" in
 esac
 
 hyprctl keyword misc:disable_scale_notification true
-hyprctl keyword monitor "$ACTIVE_MONITOR,preferred,auto,$NEW_SCALE"
+hyprctl keyword monitor "$ACTIVE_MONITOR,$MONITOR_SPEC,$NEW_SCALE"
 hyprctl keyword misc:disable_scale_notification false
 notify-send "󰍹    Display scaling set to ${NEW_SCALE}x"
